@@ -54,8 +54,25 @@ void simpleHighway(pcl::visualization::PCLVisualizer::Ptr &viewer) {
   std::pair<pcl::PointCloud<pcl::PointXYZ>::Ptr,
             pcl::PointCloud<pcl::PointXYZ>::Ptr>
       segmentCloud = point_Processor.SegmentPlane(point_cloud, 100, 0.2);
-  renderPointCloud(viewer, segmentCloud.first, "obstCloud", Color(1, 0, 0));
-  renderPointCloud(viewer, segmentCloud.second, "planeCloud", Color(0, 1, 0));
+  // renderPointCloud(viewer, segmentCloud.first, "obstCloud", Color(1, 0, 0));
+  // renderPointCloud(viewer, segmentCloud.second, "planeCloud", Color(0, 1,
+  // 0));
+
+  std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> cloudClusters =
+      point_Processor.Clustering(segmentCloud.first, 1.0, 3, 30);
+
+  int clusterId = 0;
+  std::vector<Color> colors = {Color(1, 0, 0), Color(0, 1, 0), Color(0, 0, 1)};
+
+  for (pcl::PointCloud<pcl::PointXYZ>::Ptr cluster : cloudClusters) {
+    std::cout << "cluster size ";
+    point_Processor.numPoints(cluster);
+    renderPointCloud(viewer, cluster, "obstCloud" + std::to_string(clusterId),
+                     colors[clusterId]);
+    Box box = point_Processor.BoundingBox(cluster);
+    renderBox(viewer, box, clusterId);
+    ++clusterId;
+  }
 }
 
 // setAngle: SWITCH CAMERA ANGLE {XY, TopDown, Side, FPS}
