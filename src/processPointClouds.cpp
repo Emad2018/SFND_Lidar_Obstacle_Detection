@@ -15,7 +15,9 @@ void ProcessPointClouds<PointT>::numPoints(
 }
 
 template <typename PointT>
-typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(
+std::pair<typename pcl::PointCloud<PointT>::Ptr,
+          typename pcl::PointCloud<PointT>::Ptr>
+ProcessPointClouds<PointT>::FilterCloud(
     typename pcl::PointCloud<PointT>::Ptr cloud, float filterRes,
     Eigen::Vector4f minPoint, Eigen::Vector4f maxPoint) {
 
@@ -24,6 +26,44 @@ typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(
 
   // TODO:: Fill in the function to do voxel grid point reduction and region
   // based filtering
+  typename pcl::PointCloud<PointT>::Ptr cloud_filtered(
+      new pcl::PointCloud<PointT>);
+  pcl::VoxelGrid<PointT> sor;
+  sor.setInputCloud(cloud);
+  sor.setLeafSize(filterRes, filterRes, filterRes);
+  sor.filter(*cloud_filtered);
+
+  // typename pcl::CropBox<PointT>::Ptr ROI(new pcl::CropBox<PointT>(true));
+  pcl::CropBox<PointT> ROI(true);
+  typename pcl::PointCloud<PointT>::Ptr ROI_filtered(
+      new pcl::PointCloud<PointT>);
+
+  ROI.setInputCloud(cloud_filtered);
+  ROI.setMin(minPoint);
+  ROI.setMax(maxPoint);
+  ROI.filter(*ROI_filtered);
+
+  std::vector<int> indices;
+  typename pcl::PointCloud<PointT>::Ptr roof_ROI(new pcl::PointCloud<PointT>);
+  pcl::CropBox<PointT> roof(true);
+  roof.setInputCloud(ROI_filtered);
+  roof.setMin(Eigen::Vector4f(-3, -2, -1, 1));
+  roof.setMax(Eigen::Vector4f(3, 2, 1, 1));
+  roof.filter(indices);
+  roof.filter(*roof_ROI);
+
+  pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
+
+  for (int index : indices) {
+    inliers->indices.push_back(index);
+  }
+
+  pcl::ExtractIndices<PointT> extract;
+
+  extract.setInputCloud(ROI_filtered);
+  extract.setIndices(inliers);
+  extract.setNegative(true);
+  extract.filter(*ROI_filtered);
 
   auto endTime = std::chrono::steady_clock::now();
   auto elapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -31,7 +71,11 @@ typename pcl::PointCloud<PointT>::Ptr ProcessPointClouds<PointT>::FilterCloud(
   std::cout << "filtering took " << elapsedTime.count() << " milliseconds"
             << std::endl;
 
-  return cloud;
+  std::pair<typename pcl::PointCloud<PointT>::Ptr,
+            typename pcl::PointCloud<PointT>::Ptr>
+      segResult(roof_ROI, ROI_filtered);
+
+  return segResult;
 }
 
 template <typename PointT>

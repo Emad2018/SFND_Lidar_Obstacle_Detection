@@ -70,6 +70,7 @@ void render2DTree(Node *node, pcl::visualization::PCLVisualizer::Ptr &viewer,
     render2DTree(node->right, viewer, upperWindow, iteration, depth + 1);
   }
 }
+
 void Proximity(const std::vector<float> &point, std::vector<int> &cluster,
                KdTree *tree, float distanceTol, std::vector<int> &processed,
                int index) {
@@ -88,6 +89,7 @@ void Proximity(const std::vector<float> &point, std::vector<int> &cluster,
     }
   }
 }
+
 std::vector<std::vector<int>>
 euclideanCluster(const std::vector<std::vector<float>> &points, KdTree *tree,
                  float distanceTol) {
