@@ -42,6 +42,10 @@ public:
             typename pcl::PointCloud<PointT>::Ptr>
   SegmentPlane(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations,
                float distanceThreshold);
+  std::pair<typename pcl::PointCloud<PointT>::Ptr,
+            typename pcl::PointCloud<PointT>::Ptr>
+  Ransac_3D(typename pcl::PointCloud<PointT>::Ptr cloud, int maxIterations,
+            float distanceThreshold);
 
   std::vector<typename pcl::PointCloud<PointT>::Ptr>
   Clustering(typename pcl::PointCloud<PointT>::Ptr cloud,
