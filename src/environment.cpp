@@ -61,7 +61,7 @@ void cityBlock(pcl::visualization::PCLVisualizer::Ptr &viewer,
 
   std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr,
             pcl::PointCloud<pcl::PointXYZI>::Ptr>
-      segmentCloud = point_Processor.Ransac_3D(fillter_Cloud.second, 100, 0.2);
+      segmentCloud = point_Processor.Ransac_3D(fillter_Cloud.second, 20, 0.2);
 
   // renderPointCloud(viewer, segmentCloud.first, "obstCloud", Color(1, 0, 0));
   // renderPointCloud(viewer, segmentCloud.second, "planeCloud", Color(0, 1,
